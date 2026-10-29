@@ -117,14 +117,16 @@ Register extra services in the **application using this package**, not inside `v
 
    use Whitecube\LaravelCookieConsent\Consent;
    use Whitecube\LaravelCookieConsent\CookiesServiceProvider as ServiceProvider;
-   use Whitecube\LaravelCookieConsent\Facades\Cookies;
+   use Whitecube\LaravelCookieConsent\CookiesRegistrar;
 
    class CookiesServiceProvider extends ServiceProvider
    {
        protected function registerCookies(): void
        {
+           $cookies = app(CookiesRegistrar::class);
+
            // Meta Pixel: marketing. Create resources/views/tracking/meta-pixel.blade.php.
-           Cookies::optional()->name('_fbp')
+           $cookies->optional()->name('_fbp')
                ->description('Used by Meta Pixel for advertising measurement.')
                ->duration(90 * 24 * 60)
                ->accepted(fn (Consent $consent) => $consent->script(
@@ -132,7 +134,7 @@ Register extra services in the **application using this package**, not inside `v
                ));
 
            // Microsoft Clarity: analytics. Create resources/views/tracking/clarity.blade.php.
-           Cookies::analytics()->name('_clck')
+           $cookies->analytics()->name('_clck')
                ->description('Used by Microsoft Clarity to recognize a visitor.')
                ->duration(365 * 24 * 60)
                ->accepted(fn (Consent $consent) => $consent->script(
@@ -142,6 +144,8 @@ Register extra services in the **application using this package**, not inside `v
    }
    ```
 
+   Use the registrar during provider boot rather than resolving the `Cookies` facade. The facade resolves the request-specific consent manager, which must read cookies after Laravel decrypts them.
+
    Enable only services you actually use. Durations are in **minutes**; verify the exact cookie names, purposes, and lifetimes against the deployed vendor configuration and register all additional cookies used. The package already registers Laravel's session and CSRF cookies, its own consent identifier, and GA4 cookies when GA4 is enabled. Do not register those again.
 
 5. Clear cached configuration or views if applicable, then test in a fresh browser session. Before consent, the relevant vendor's network requests must be absent. Accept analytics alone and marketing alone separately; verify each script is loaded only for its category. Refresh and reset consent, then repeat. Clearing configuration is available with `php artisan optimize:clear`.
@@ -150,14 +154,14 @@ Register extra services in the **application using this package**, not inside `v
 
 - **Meta Pixel:** in Meta Events Manager, open your pixel and obtain the base code for manual installation. Put its JavaScript `<script>` in `tracking/meta-pixel.blade.php` and register it under `optional` as above. The example does not add the separate `<noscript>` tracking pixel: do not add that image unconditionally, as it would send a request without marketing consent.
 - **Microsoft Clarity:** in the Clarity project, choose **Settings → Setup → Get tracking code**, put the script in `tracking/clarity.blade.php`, and register it under `analytics` as above. See [Microsoft's setup guide](https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-setup).
-- **Hotjar:** obtain the installation script and site ID from your Hotjar dashboard and save the script as `tracking/hotjar.blade.php`. Register a real Hotjar cookie in `Cookies::analytics()` with its actual name and duration, using the same `accepted()` pattern as the Clarity example. Confirm the vendor's current cookie list and whether session recording is appropriate for your site.
+- **Hotjar:** obtain the installation script and site ID from your Hotjar dashboard and save the script as `tracking/hotjar.blade.php`. Register a real Hotjar cookie in `$cookies->analytics()` with its actual name and duration, using the same `accepted()` pattern as the Clarity example. Confirm the vendor's current cookie list and whether session recording is appropriate for your site.
 - **Google Tag Manager:** obtain your web container snippet from your GTM workspace; the container ID starts with `GTM-`, whereas a GA4 measurement ID starts with `G-`. Save the container's JavaScript `<script>` as `tracking/gtm.blade.php` and register it with the category appropriate to the tags that container loads. Follow [Google's container setup guide](https://support.google.com/tagmanager/answer/14847097). GTM is a container, not a consent category: if it contains both analytics and marketing tags, gate each tag with the relevant consent in GTM or separate the integrations. Loading the entire mixed-purpose container after only one category is accepted is not sufficient. Do not add its `<noscript>` iframe unconditionally.
 
 Each `accepted()` callback must return a valid script tag. Whitecube adds the script after acceptance and on later page loads with that consent; it does not turn arbitrary HTML, multiple sibling script tags, or a `<noscript>` block into independently controlled scripts when consent is accepted through JavaScript. Split multiple scripts into separate registered callbacks where needed. Check vendor-specific consent settings and test actual browser requests, including after consent withdrawal. A full page reload after withdrawal is needed to stop scripts already running on that page; previously set third-party cookies may require separate cleanup.
 
 #### Essential scripts
 
-Use `Cookies::essentials()` only for cookies strictly required for the requested service. Essential category acceptance cannot be declined. First-party code that does not need optional trackers can remain in your application's normal asset pipeline; do not classify analytics, advertising, session recording, or a mixed-purpose GTM container as essential merely to make it load sooner.
+Use `$cookies->essentials()` only for cookies strictly required for the requested service. Essential category acceptance cannot be declined. First-party code that does not need optional trackers can remain in your application's normal asset pipeline; do not classify analytics, advertising, session recording, or a mixed-purpose GTM container as essential merely to make it load sooner.
 
 For custom categories, translated labels, multiple cookies per vendor, consent callbacks, and more detailed configuration, see [Whitecube's cookie registration guide](https://github.com/whitecube/laravel-cookie-consent#registering-cookies).
 
