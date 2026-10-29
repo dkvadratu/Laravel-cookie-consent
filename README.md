@@ -173,15 +173,26 @@ Render the registered categories and cookies in a Blade view:
 @cookieconsentinfo
 ```
 
-For content stored in an editor, replace the marker after rendering the content:
+### Markers in rich text editors
+
+Blade directives in editor content are stored as text. After rendering the editor content to HTML, pass it through the package renderer:
 
 ```php
-use Whitecube\LaravelCookieConsent\Facades\Cookies;
+use Dkvadratu\CookieConsent\CookieContentRenderer;
 
-$html = Cookies::replaceInfoTag($renderedContent);
+$html = app(CookieContentRenderer::class)->render($renderedContent);
 ```
 
-Place `@cookieconsentinfo` in a separate editor paragraph. The generated list contains cookies registered with Whitecube; register the other cookies your application uses. The package includes neutral table spacing and horizontal scrolling for narrow screens. Override `.cookie-consent-list` and `.cookie-consent-list__table` in your application's CSS, or create `resources/views/vendor/cookie-consent/info.blade.php` to replace the view completely. The inline default styles require a CSP that allows inline styles; otherwise override the view and serve your styles as an external stylesheet.
+Place each marker in a separate editor paragraph:
+
+- `@cookieconsentinfo` renders the list of registered cookies.
+- `@cookieconsentbutton` renders a button that resets the consent choice. The default label uses Whitecube's translated “manage cookies” text; pass a second argument to `render()` to provide a custom label.
+
+```php
+$html = app(CookieContentRenderer::class)->render($renderedContent, 'Cookie settings');
+```
+
+The list contains cookies registered with Whitecube; register the other cookies your application uses. The package includes neutral table spacing and horizontal scrolling for narrow screens. Override `.cookie-consent-list` and `.cookie-consent-list__table` in your application's CSS with a more specific selector, or create `resources/views/vendor/cookie-consent/info.blade.php` to replace the view completely. The inline default styles require a CSP that allows inline styles; otherwise override the view and serve your styles as an external stylesheet.
 
 ### Optional Filament table
 
