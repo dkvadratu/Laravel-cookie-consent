@@ -35,6 +35,12 @@ class CookieConsentServiceProvider extends ServiceProvider
         $this->publishes([__DIR__.'/../config/dkvadratu-cookie-consent.php' => config_path('dkvadratu-cookie-consent.php')], 'dkvadratu-cookie-consent-config');
 
         $this->app->booted(function (): void {
+            $overrides = collect(config('view.paths', []))
+                ->map(fn (string $path): string => $path.'/vendor/cookie-consent')
+                ->filter(fn (string $path): bool => is_dir($path))
+                ->all();
+            $this->app['view']->prependNamespace('cookie-consent', [...$overrides, __DIR__.'/../resources/views']);
+
             $cookies = app(CookiesRegistrar::class);
             $cookies->essentials()->session()->csrf();
             $cookies->essentials()->name('cookie_consent_id')

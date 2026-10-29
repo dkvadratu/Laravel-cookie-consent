@@ -181,7 +181,7 @@ use Whitecube\LaravelCookieConsent\Facades\Cookies;
 $html = Cookies::replaceInfoTag($renderedContent);
 ```
 
-Place `@cookieconsentinfo` in a separate editor paragraph. The generated list contains cookies registered with Whitecube; register the other cookies your application uses.
+Place `@cookieconsentinfo` in a separate editor paragraph. The generated list contains cookies registered with Whitecube; register the other cookies your application uses. The package includes neutral table spacing and horizontal scrolling for narrow screens. Override `.cookie-consent-list` and `.cookie-consent-list__table` in your application's CSS, or create `resources/views/vendor/cookie-consent/info.blade.php` to replace the view completely. The inline default styles require a CSP that allows inline styles; otherwise override the view and serve your styles as an external stylesheet.
 
 ### Optional Filament table
 
