@@ -2,7 +2,6 @@
     "name": "dkvadratu/laravel-cookie-consent",
     "description": "Cookie consent registration and audit log for Laravel",
     "type": "library",
-    "version": "1.0.0",
     "license": "proprietary",
     "require": {
         "php": "^8.2",

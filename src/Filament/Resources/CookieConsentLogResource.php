@@ -2,18 +2,25 @@
 
 namespace Dkvadratu\CookieConsent\Filament\Resources;
 
+use BackedEnum;
 use Dkvadratu\CookieConsent\CookieConsentLog;
 use Dkvadratu\CookieConsent\Filament\Resources\Pages\ListCookieConsentLogs;
 use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
+use UnitEnum;
 
 class CookieConsentLogResource extends Resource
 {
     protected static ?string $model = CookieConsentLog::class;
 
     protected static ?string $navigationLabel = 'Slapukų sutikimai';
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Tag;
+
+    protected static string|UnitEnum|null $navigationGroup = 'System';
 
     public static function canViewAny(): bool
     {

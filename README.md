@@ -54,7 +54,7 @@ The installer runs only this package's migrations when asked. It does not automa
 
 ### 4. Existing projects and deployment
 
-If `cookie_consent_logs` already exists, the migrations retain it and add `ip_address` if missing. Check that the existing table contains `cookie_id`, `consented_categories`, `action`, `created_at`, and `updated_at`. Add missing columns using a new migration; do not delete previously executed migrations or existing records.
+The package has one migration. It creates `cookie_consent_logs` with all required fields, or adds `ip_address` if the table already exists and the column is missing. Check that the existing table contains `cookie_id`, `consented_categories`, `action`, `created_at`, and `updated_at`. Add missing columns using a new migration; do not delete previously executed migrations or existing records.
 
 If the application already registers its own consent logging middleware or GA4 integration, remove the duplicate implementation after reviewing it. Otherwise, events or tracking scripts may be recorded or loaded twice.
 
@@ -210,7 +210,7 @@ This example assumes `is_admin` is a trusted field in your user model. If the ga
 - **IP masking:** IPv4 addresses retain the first two octets; IPv6 addresses retain the first 32 bits. Masking happens before the database insert. A masked IP and identifier may still be linkable, so configure access controls and an appropriate retention policy.
 - **Proxies:** the IP comes from Laravel's request. Configure trusted proxies correctly if the application runs behind a proxy or CDN.
 - **Cookie:** `cookie_consent_id` links consent events, is registered as essential, and uses Whitecube's configured duration. The package attaches Laravel's `web` middleware and its logging middleware to Whitecube routes.
-- **Rollback:** package migrations deliberately retain the table and IP column, because either may have existed before installation. Automatic log pruning is not provided.
+- **Rollback:** the package migration deliberately retains the table and IP column, because either may have existed before installation. Automatic log pruning is not provided.
 - **Production verification:** in a browser without previous consent, test all choices, withdrawal, log entries, and ensure non-essential network requests do not run without the relevant consent.
 
 ### License
